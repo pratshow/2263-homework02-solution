@@ -10,6 +10,15 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.9'
+
+    //Project Lombok
+    id "io.freefair.lombok" version "6.3.0"
+
+    //pmd does console output stuff
+    id 'pmd'
+
+    //jacoco
+    id 'jacoco'
 }
 
 repositories {
@@ -33,6 +42,26 @@ dependencies {
     implementation 'org.kordamp.ikonli:ikonli-fontawesome5-pack:12.1.0'
     implementation 'org.kordamp.ikonli:ikonli-materialdesign2-pack:12.1.0'
     implementation 'org.kordamp.ikonli:ikonli-material2-pack:12.1.0'
+
+    // https://mvnrepository.com/artifact/com.google.flogger/flogger
+    implementation 'com.google.flogger:flogger:0.7.1'
+
+
+    // https://mvnrepository.com/artifact/com.google.flogger/flogger-system-backend
+    implementation 'com.google.flogger:flogger-system-backend:0.7.1'
+
+    // mocking framework
+    testImplementation "org.mockito:mockito-core:1.+"
+
+    //javafx testing
+    testImplementation "org.testfx:testfx-core:4.0.16-alpha"
+
+    //Junit testing framework for TestFX
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.1'
+    testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
+
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.13.2'
+
 }
 
 application {
@@ -48,4 +77,51 @@ tasks.named('test') {
 javafx {
     version = "17"
     modules = ['javafx.controls']
+}
+
+
+pmd {
+    consoleOutput = true
+    toolVersion = "6.21.0"
+    rulesMinimumPriority = 5
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+            html{
+                enabled  true;
+            }
+    }
+
+}
+test.finalizedBy(project.tasks.jacocoTestReport);
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.85
+            }
+
+            //includes['App']
+            //excludes = ["**/ProjectAquire/**"]
+        }
+
+    }
 }
